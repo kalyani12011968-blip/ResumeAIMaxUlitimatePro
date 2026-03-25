@@ -1,24 +1,16 @@
 import java.io.*;
 import java.util.*;
-
 public class ResumeAIMaxUlitimatePro {
-
     static int HIDDEN_SIZE = 256;
     static double LEARNING_RATE = 0.005;
     static int EPOCHS = 200;
-
     static Random rand = new Random();
-
     static Map<String, Integer> vocab = new HashMap<>();
     static Map<String, Double> idf = new HashMap<>();
-
-    // TOKENIZE
     static List<String> tokenize(String text) {
         text = text.toLowerCase().replaceAll("[^a-z ]", "");
         return Arrays.asList(text.split("\\s+"));
     }
-
-    // BUILD VOCAB
     static void buildVocab(List<Data> dataset) {
         int index = 0;
         Map<String, Integer> docCount = new HashMap<>();
@@ -30,15 +22,12 @@ public class ResumeAIMaxUlitimatePro {
                 if (!vocab.containsKey(word)) vocab.put(word, index++);
             }
         }
-
         int N = dataset.size();
         for (String word : vocab.keySet()) {
             int df = docCount.getOrDefault(word, 1);
             idf.put(word, Math.log((double) N / df));
         }
     }
-
-    // TF-IDF
     static double[] tfidfVector(String text) {
         List<String> tokens = tokenize(text);
         double[] vec = new double[vocab.size()];
@@ -66,11 +55,8 @@ public class ResumeAIMaxUlitimatePro {
 
         return vec;
     }
-
-    // EXTRA FEATURES
     static double[] extraFeatures(String text) {
         text = text.toLowerCase();
-
         int skillCount = 0;
         if (text.contains("java")) skillCount += 4;
         if (text.contains("aws")) skillCount += 4;
@@ -79,12 +65,9 @@ public class ResumeAIMaxUlitimatePro {
         if (text.contains("python")) skillCount += 2;
         if (text.contains("sql")) skillCount += 1;
         if (text.contains("spring")) skillCount += 3;
-
         if (skillCount > 5) skillCount += 2;
-
         int experience = 0;
         String[] words = text.split(" ");
-
         for (int i = 0; i < words.length; i++) {
             if (words[i].matches("\\d+") && i + 1 < words.length &&
                 words[i + 1].contains("year")) {
@@ -92,25 +75,19 @@ public class ResumeAIMaxUlitimatePro {
                 break;
             }
         }
-
         double expLevel = experience > 5 ? 1 : 0.5;
         double project = text.contains("project") ? 1 : 0;
         int projectCount = text.split("project").length - 1;
-
         double education = 0;
         if (text.contains("bachelor")) education = 0.5;
         if (text.contains("master")) education = 0.8;
         if (text.contains("phd")) education = 1.0;
-
         double cert = text.contains("certified") ? 1 : 0;
-
         double role = 0;
         if (text.contains("developer")) role = 0.7;
         if (text.contains("engineer")) role = 0.8;
         if (text.contains("data scientist")) role = 1.0;
-
         double lengthFeature = Math.min(1.0, text.length() / 500.0);
-
         return new double[]{
             skillCount / 20.0,
             experience / 20.0,
@@ -123,41 +100,30 @@ public class ResumeAIMaxUlitimatePro {
             lengthFeature * 0.5
         };
     }
-
     static double[] combine(double[] a, double[] b) {
         double[] out = new double[a.length + b.length];
         System.arraycopy(a, 0, out, 0, a.length);
         System.arraycopy(b, 0, out, a.length, b.length);
         return out;
     }
-
-    // MODEL
     static class NeuralNet {
-
         double[][] W1;
         double[] b1 = new double[HIDDEN_SIZE];
-
         double[][] W2h = new double[HIDDEN_SIZE][HIDDEN_SIZE];
         double[] b2h = new double[HIDDEN_SIZE];
-
         double[] W3 = new double[HIDDEN_SIZE];
         double b3 = 0;
-
         NeuralNet(int inputSize) {
             W1 = new double[inputSize][HIDDEN_SIZE];
-
             for (int i = 0; i < inputSize; i++)
                 for (int j = 0; j < HIDDEN_SIZE; j++)
                     W1[i][j] = rand.nextGaussian() * 0.1;
-
             for (int i = 0; i < HIDDEN_SIZE; i++)
                 for (int j = 0; j < HIDDEN_SIZE; j++)
                     W2h[i][j] = rand.nextGaussian() * 0.1;
-
             for (int j = 0; j < HIDDEN_SIZE; j++)
                 W3[j] = rand.nextGaussian() * 0.1;
         }
-
         double forward(double[] x) {
             double[] h1 = new double[HIDDEN_SIZE];
             double[] h2 = new double[HIDDEN_SIZE];
