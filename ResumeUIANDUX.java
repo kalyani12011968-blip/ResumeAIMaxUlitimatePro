@@ -137,9 +137,9 @@ public class ResumeUIANDUX {
             double score = model.forward(vec) * 100;
 
             String decision;
-            if (score >= 75) decision = "SELECTED ✅";
-            else if (score >= 60) decision = "MAYBE ⚠️";
-            else decision = "REJECTED ❌";
+            if (score >= 75) decision = "SELECTED ";
+            else if (score >= 60) decision = "MAYBE ";
+            else decision = "REJECTED ";
 
             resultArea.setText("Result: " + decision);
 
